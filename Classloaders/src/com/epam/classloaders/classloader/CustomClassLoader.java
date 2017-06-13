@@ -4,8 +4,11 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 public class CustomClassLoader extends ClassLoader {
+
+    private HashMap<String,Class> cache = new HashMap<>();
 
     public CustomClassLoader() {
         super(CustomClassLoader.class.getClassLoader());
@@ -22,11 +25,15 @@ public class CustomClassLoader extends ClassLoader {
     }
 
     protected Class findClass(String name) throws ClassNotFoundException {
+        if (cache.containsKey(name)){
+            return cache.get(name);
+        }
         byte[] b = null;
         try {
             b = loadClassFileData(name);
             Class c = defineClass(name, b, 0, b.length);
             resolveClass(c);
+            cache.put(name, c);
             System.out.println("[CLASSLOADER] Class " + name + " loaded by " + c.getClassLoader());
             return c;
         } catch (IOException e) {
